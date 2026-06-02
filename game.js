@@ -433,6 +433,20 @@ document.addEventListener('keyup', (e) => {
 const touchLeft = document.getElementById('touchLeft');
 const touchRight = document.getElementById('touchRight');
 const touchFire = document.getElementById('touchFire');
+const mobileControls = document.getElementById('mobileControls');
+
+// Forzar visualización en dispositivos con pantalla táctil o pantallas pequeñas
+const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+const isMobileViewport = window.innerWidth <= 900;
+
+if ((isTouchDevice || isMobileViewport) && mobileControls) {
+    mobileControls.style.setProperty('display', 'flex', 'important');
+    // Ocultar las instrucciones de teclado
+    const desktopInstructions = document.querySelector('.controls p');
+    if (desktopInstructions) {
+        desktopInstructions.style.setProperty('display', 'none', 'important');
+    }
+}
 
 if (touchLeft && touchRight && touchFire) {
     // Mover a la izquierda
