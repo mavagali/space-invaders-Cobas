@@ -13,6 +13,39 @@ let lives = 3;
 let level = 1;
 let enemySpeed = 2;
 
+// Configuración de niveles de dificultad
+let currentDifficulty = 'normal';
+const difficultySettings = {
+    easy: {
+        lives: 5,
+        initialEnemySpeed: 1.3,
+        enemyShootChance: 0.005,
+        scoreMultiplier: 1,
+        speedIncrement: 0.3
+    },
+    normal: {
+        lives: 3,
+        initialEnemySpeed: 2.0,
+        enemyShootChance: 0.008,
+        scoreMultiplier: 1.5,
+        speedIncrement: 0.45
+    },
+    hard: {
+        lives: 2,
+        initialEnemySpeed: 3.0,
+        enemyShootChance: 0.013,
+        scoreMultiplier: 2.5,
+        speedIncrement: 0.6
+    },
+    nightmare: {
+        lives: 1,
+        initialEnemySpeed: 4.2,
+        enemyShootChance: 0.022,
+        scoreMultiplier: 4,
+        speedIncrement: 0.8
+    }
+};
+
 // ==========================================================================
 // SINTETIZADOR DE AUDIO RETRO (Web Audio API)
 // ==========================================================================
@@ -198,7 +231,7 @@ const Enemy = function(x, y, type) {
     this.color = type === 0 ? '#ff0055' : (type === 1 ? '#ffcc00' : '#00ffff');
     this.speed = enemySpeed;
     this.direction = 1;
-    this.shootChance = 0.008;
+    this.shootChance = difficultySettings[currentDifficulty].enemyShootChance;
 };
 
 const EnemyBullet = function(x, y) {
@@ -517,7 +550,7 @@ function checkCollisions() {
                 bullets[i].y < enemies[j].y + enemies[j].height &&
                 bullets[i].y + bullets[i].height > enemies[j].y
             ) {
-                score += 10;
+                score += Math.round(10 * difficultySettings[currentDifficulty].scoreMultiplier);
                 createExplosion(enemies[j].x + enemies[j].width / 2, enemies[j].y + enemies[j].height / 2, enemies[j].color, 15);
                 playExplosionSound();
                 triggerShake(8, 3);
@@ -538,7 +571,7 @@ function checkCollisions() {
                 bullets[i].y < ufo.y + ufo.height &&
                 bullets[i].y + bullets[i].height > ufo.y
             ) {
-                score += ufo.points;
+                score += Math.round(ufo.points * difficultySettings[currentDifficulty].scoreMultiplier);
                 createExplosion(ufo.x + ufo.width / 2, ufo.y + ufo.height / 2, ufo.color, 30);
                 playExplosionSound();
                 // Efecto de cámara lenta y gran sacudida
@@ -623,26 +656,51 @@ function checkCollisions() {
 // ==========================================================================
 function drawPlayer() {
     ctx.save();
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = player.color;
-    ctx.fillStyle = player.color;
-    ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = 1.5;
-
-    // Diseño detallado de nave cyberpunk estilo caza espacial
+    ctx.shadowBlur = 18;
+    ctx.shadowColor = '#00ff88';
+    
+    // Dibujar alas exteriores (verde brillante neón)
+    ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(player.x + player.width / 2, player.y); // Punta delantera
-    ctx.lineTo(player.x + player.width, player.y + player.height); // Ala derecha
-    ctx.lineTo(player.x + player.width * 0.8, player.y + player.height * 0.75); // Fuselaje derecho
-    ctx.lineTo(player.x + player.width * 0.2, player.y + player.height * 0.75); // Fuselaje izquierdo
-    ctx.lineTo(player.x, player.y + player.height); // Ala izquierda
+    ctx.moveTo(player.x + player.width / 2, player.y + 5);
+    ctx.lineTo(player.x + player.width, player.y + player.height - 5);
+    ctx.lineTo(player.x + player.width * 0.85, player.y + player.height);
+    ctx.lineTo(player.x + player.width * 0.15, player.y + player.height);
+    ctx.lineTo(player.x, player.y + player.height - 5);
     ctx.closePath();
     ctx.fill();
     ctx.stroke();
 
-    // Propulsor (pequeña llama o luz)
+    // Dibujar fuselaje central / cabina (azul cian brillante)
+    ctx.shadowColor = '#00ffff';
     ctx.fillStyle = '#00ffff';
-    ctx.fillRect(player.x + player.width / 2 - 3, player.y + player.height * 0.75, 6, 8);
+    ctx.beginPath();
+    ctx.moveTo(player.x + player.width / 2, player.y);
+    ctx.lineTo(player.x + player.width * 0.65, player.y + player.height * 0.5);
+    ctx.lineTo(player.x + player.width * 0.5, player.y + player.height * 0.7);
+    ctx.lineTo(player.x + player.width * 0.35, player.y + player.height * 0.5);
+    ctx.closePath();
+    ctx.fill();
+
+    // Cañones en los extremos de las alas
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(player.x + 2, player.y + player.height - 18, 4, 12);
+    ctx.fillRect(player.x + player.width - 6, player.y + player.height - 18, 4, 12);
+
+    // Animación de propulsión de fuego
+    if (gameRunning && !gamePaused) {
+        ctx.shadowBlur = 12;
+        ctx.shadowColor = '#ff6600';
+        ctx.fillStyle = Math.random() < 0.5 ? '#ff3300' : '#ffaa00';
+        ctx.beginPath();
+        ctx.moveTo(player.x + player.width / 2 - 5, player.y + player.height);
+        ctx.lineTo(player.x + player.width / 2 + 5, player.y + player.height);
+        ctx.lineTo(player.x + player.width / 2, player.y + player.height + 10 + Math.random() * 8);
+        ctx.closePath();
+        ctx.fill();
+    }
 
     ctx.restore();
 }
@@ -671,67 +729,112 @@ function drawBullets() {
 
 function drawEnemies() {
     ctx.save();
-    ctx.shadowBlur = 10;
+    
+    // Animación basada en el tiempo para mover garras y tentáculos
+    const animOffset = Math.sin(Date.now() / 150) > 0;
 
     for (let enemy of enemies) {
+        ctx.save();
+        ctx.shadowBlur = 10;
         ctx.shadowColor = enemy.color;
         ctx.fillStyle = enemy.color;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
 
         const x = enemy.x;
         const y = enemy.y;
         const w = enemy.width;
         const h = enemy.height;
 
-        // Dibujar naves enemigas con formas vectoriales según su tipo
         ctx.beginPath();
         if (enemy.type === 0) {
-            // Diseño alien 1: "Cangrejo"
-            ctx.moveTo(x + w * 0.2, y);
-            ctx.lineTo(x + w * 0.8, y);
-            ctx.lineTo(x + w, y + h * 0.4);
-            ctx.lineTo(x + w * 0.8, y + h * 0.75);
-            ctx.lineTo(x + w * 0.6, y + h * 0.75);
-            ctx.lineTo(x + w * 0.7, y + h);
-            ctx.lineTo(x + w * 0.55, y + h * 0.75);
-            ctx.lineTo(x + w * 0.45, y + h * 0.75);
-            ctx.lineTo(x + w * 0.3, y + h);
-            ctx.lineTo(x + w * 0.4, y + h * 0.75);
-            ctx.lineTo(x + w * 0.2, y + h * 0.75);
-            ctx.lineTo(x, y + h * 0.4);
-        } else if (enemy.type === 1) {
-            // Diseño alien 2: "Calamar"
-            ctx.moveTo(x + w * 0.5, y);
-            ctx.lineTo(x + w, y + h * 0.5);
-            ctx.lineTo(x + w * 0.75, y + h);
-            ctx.lineTo(x + w * 0.6, y + h * 0.7);
-            ctx.lineTo(x + w * 0.5, y + h);
-            ctx.lineTo(x + w * 0.4, y + h * 0.7);
-            ctx.lineTo(x + w * 0.25, y + h);
-            ctx.lineTo(x, y + h * 0.5);
-        } else {
-            // Diseño alien 3: "Pulpo/Espacial"
+            // Diseño alien "Cangrejo" con garras animadas
             ctx.moveTo(x + w * 0.3, y);
             ctx.lineTo(x + w * 0.7, y);
             ctx.lineTo(x + w * 0.9, y + h * 0.3);
-            ctx.lineTo(x + w, y + h * 0.8);
-            ctx.lineTo(x + w * 0.8, y + h * 0.6);
-            ctx.lineTo(x + w * 0.6, y + h);
-            ctx.lineTo(x + w * 0.4, y + h);
-            ctx.lineTo(x + w * 0.2, y + h * 0.6);
-            ctx.lineTo(x, y + h * 0.8);
+            ctx.lineTo(x + w, y + h * 0.6);
+            
+            if (animOffset) {
+                // Garras hacia abajo
+                ctx.lineTo(x + w * 0.8, y + h * 0.8);
+                ctx.lineTo(x + w * 0.9, y + h);
+                ctx.lineTo(x + w * 0.7, y + h * 0.8);
+                ctx.lineTo(x + w * 0.6, y + h * 0.8);
+                ctx.lineTo(x + w * 0.5, y + h * 0.9);
+                ctx.lineTo(x + w * 0.4, y + h * 0.8);
+                ctx.lineTo(x + w * 0.3, y + h * 0.8);
+                ctx.lineTo(x + w * 0.1, y + h);
+                ctx.lineTo(x + w * 0.2, y + h * 0.8);
+            } else {
+                // Garras hacia fuera
+                ctx.lineTo(x + w * 0.85, y + h * 0.6);
+                ctx.lineTo(x + w * 0.95, y + h * 0.8);
+                ctx.lineTo(x + w * 0.75, y + h * 0.75);
+                ctx.lineTo(x + w * 0.55, y + h * 0.85);
+                ctx.lineTo(x + w * 0.45, y + h * 0.85);
+                ctx.lineTo(x + w * 0.25, y + h * 0.75);
+                ctx.lineTo(x + w * 0.05, y + h * 0.8);
+                ctx.lineTo(x + w * 0.15, y + h * 0.6);
+            }
+            ctx.lineTo(x, y + h * 0.6);
             ctx.lineTo(x + w * 0.1, y + h * 0.3);
+        } else if (enemy.type === 1) {
+            // Diseño alien "Calamar" con tentáculos wiggling
+            ctx.moveTo(x + w * 0.5, y);
+            ctx.lineTo(x + w * 0.8, y + h * 0.3);
+            ctx.lineTo(x + w * 0.9, y + h * 0.6);
+            
+            if (animOffset) {
+                ctx.lineTo(x + w * 0.75, y + h);
+                ctx.lineTo(x + w * 0.6, y + h * 0.75);
+                ctx.lineTo(x + w * 0.5, y + h * 0.95);
+                ctx.lineTo(x + w * 0.4, y + h * 0.75);
+                ctx.lineTo(x + w * 0.25, y + h);
+            } else {
+                ctx.lineTo(x + w * 0.85, y + h * 0.95);
+                ctx.lineTo(x + w * 0.65, y + h * 0.8);
+                ctx.lineTo(x + w * 0.5, y + h * 0.85);
+                ctx.lineTo(x + w * 0.35, y + h * 0.8);
+                ctx.lineTo(x + w * 0.15, y + h * 0.95);
+            }
+            ctx.lineTo(x + w * 0.1, y + h * 0.6);
+            ctx.lineTo(x + w * 0.2, y + h * 0.3);
+        } else {
+            // Diseño alien "Pulpo/Espacial"
+            ctx.moveTo(x + w * 0.25, y);
+            ctx.lineTo(x + w * 0.75, y);
+            ctx.lineTo(x + w * 0.95, y + h * 0.4);
+            ctx.lineTo(x + w * 0.8, y + h * 0.7);
+            
+            if (animOffset) {
+                ctx.lineTo(x + w, y + h * 0.95);
+                ctx.lineTo(x + w * 0.7, y + h * 0.75);
+                ctx.lineTo(x + w * 0.5, y + h * 0.9);
+                ctx.lineTo(x + w * 0.3, y + h * 0.75);
+                ctx.lineTo(x, y + h * 0.95);
+            } else {
+                ctx.lineTo(x + w * 0.85, y + h * 0.8);
+                ctx.lineTo(x + w * 0.65, y + h * 0.95);
+                ctx.lineTo(x + w * 0.5, y + h * 0.75);
+                ctx.lineTo(x + w * 0.35, y + h * 0.95);
+                ctx.lineTo(x + w * 0.15, y + h * 0.8);
+            }
+            ctx.lineTo(x + w * 0.05, y + h * 0.4);
         }
         ctx.closePath();
         ctx.fill();
+        ctx.stroke();
 
-        // Ojos brillantes neón blancos/celestes
+        // Ojos de núcleo brillante
         ctx.fillStyle = '#ffffff';
-        ctx.fillRect(x + w * 0.25, y + h * 0.3, 4, 4);
-        ctx.fillRect(x + w * 0.65, y + h * 0.3, 4, 4);
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = '#ffffff';
+        ctx.fillRect(x + w * 0.3, y + h * 0.32, 4, 4);
+        ctx.fillRect(x + w * 0.6, y + h * 0.32, 4, 4);
+        
+        ctx.restore();
     }
-
     ctx.restore();
-}
 
 function drawUFO() {
     if (ufo) {
@@ -797,7 +900,8 @@ function updateUI() {
 // ==========================================================================
 function levelUp() {
     level++;
-    enemySpeed += 0.45;
+    const settings = difficultySettings[currentDifficulty];
+    enemySpeed += settings.speedIncrement;
     initEnemies();
     initBunkers(); // Regenerar escudos en cada nuevo nivel
     playLevelUpSound();
@@ -805,7 +909,7 @@ function levelUp() {
     // Aumentar la probabilidad de disparo de los enemigos progresivamente
     for (let enemy of enemies) {
         enemy.speed = enemySpeed;
-        enemy.shootChance = 0.008 + (level * 0.004);
+        enemy.shootChance = settings.enemyShootChance + (level * 0.004);
     }
 }
 
@@ -871,17 +975,32 @@ function gameLoop() {
 // ==========================================================================
 // MANEJADORES DE INTERACCIÓN DE BOTONES
 // ==========================================================================
+
+// Manejo de la selección de dificultad
+document.querySelectorAll('.diff-opt').forEach(button => {
+    button.addEventListener('click', (e) => {
+        if (!gameRunning) {
+            // Quitar clase activa de todos
+            document.querySelectorAll('.diff-opt').forEach(btn => btn.classList.remove('active'));
+            // Añadir clase activa al seleccionado
+            e.target.classList.add('active');
+            currentDifficulty = e.target.getAttribute('data-diff');
+        }
+    });
+});
+
 document.getElementById('startBtn').addEventListener('click', () => {
     // Iniciar contexto de audio tras gesto del usuario
     getAudioContext();
 
     if (!gameRunning) {
+        const settings = difficultySettings[currentDifficulty];
         gameRunning = true;
         gamePaused = false;
         score = 0;
-        lives = 3;
+        lives = settings.lives;
         level = 1;
-        enemySpeed = 2;
+        enemySpeed = settings.initialEnemySpeed;
         bullets = [];
         enemyBullets = [];
         particles = [];
@@ -903,12 +1022,13 @@ document.getElementById('pauseBtn').addEventListener('click', () => {
 
 document.getElementById('restartBtn').addEventListener('click', () => {
     getAudioContext();
+    const settings = difficultySettings[currentDifficulty];
     gameRunning = true;
     gamePaused = false;
     score = 0;
-    lives = 3;
+    lives = settings.lives;
     level = 1;
-    enemySpeed = 2;
+    enemySpeed = settings.initialEnemySpeed;
     bullets = [];
     enemyBullets = [];
     particles = [];
