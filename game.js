@@ -835,6 +835,7 @@ function drawEnemies() {
         ctx.restore();
     }
     ctx.restore();
+}
 
 function drawUFO() {
     if (ufo) {
