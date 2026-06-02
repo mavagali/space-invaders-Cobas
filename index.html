@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=1.3">
+    <link rel="stylesheet" href="style.css?v=1.4">
 </head>
 <body>
     <div class="crt-overlay"></div>
@@ -31,6 +31,15 @@
         </div>
 
         <canvas id="gameCanvas" width="800" height="600"></canvas>
+
+        <!-- Controles Táctiles para Móviles -->
+        <div id="mobileControls" class="mobile-controls">
+            <div class="movement-keys">
+                <button id="touchLeft" class="touch-btn">⬅️</button>
+                <button id="touchRight" class="touch-btn">➡️</button>
+            </div>
+            <button id="touchFire" class="touch-btn fire-btn">🔥</button>
+        </div>
 
         <div class="controls">
             <div class="difficulty-select">
@@ -56,6 +65,6 @@
         </div>
     </div>
 
-    <script src="game.js?v=1.3"></script>
+    <script src="game.js?v=1.4"></script>
 </body>
 </html>

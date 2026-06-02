@@ -428,6 +428,51 @@ document.addEventListener('keyup', (e) => {
 });
 
 // ==========================================================================
+// CONTROLES TÁCTILES (MOBILE DEVICE INPUTS)
+// ==========================================================================
+const touchLeft = document.getElementById('touchLeft');
+const touchRight = document.getElementById('touchRight');
+const touchFire = document.getElementById('touchFire');
+
+if (touchLeft && touchRight && touchFire) {
+    // Mover a la izquierda
+    touchLeft.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys['ArrowLeft'] = true;
+    });
+    touchLeft.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys['ArrowLeft'] = false;
+    });
+    touchLeft.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        keys['ArrowLeft'] = false;
+    });
+
+    // Mover a la derecha
+    touchRight.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        keys['ArrowRight'] = true;
+    });
+    touchRight.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        keys['ArrowRight'] = false;
+    });
+    touchRight.addEventListener('touchcancel', (e) => {
+        e.preventDefault();
+        keys['ArrowRight'] = false;
+    });
+
+    // Disparar
+    touchFire.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (gameRunning && !gamePaused) {
+            shootBullet();
+        }
+    });
+}
+
+// ==========================================================================
 // FUNCIONES DE DISPARO
 // ==========================================================================
 function shootBullet() {

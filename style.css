@@ -386,6 +386,11 @@ h1 {
     box-shadow: 0 0 12px rgba(255, 0, 85, 0.6);
 }
 
+/* Mobile controls (hidden by default on desktop) */
+.mobile-controls {
+    display: none;
+}
+
 /* Responsive adjust */
 @media (max-width: 900px) {
     h1 {
@@ -403,6 +408,62 @@ h1 {
         padding: 10px 15px;
     }
 
+    /* Mobile virtual controller display */
+    .mobile-controls {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        padding: 0 5px;
+        margin-top: 5px;
+        margin-bottom: 15px;
+        gap: 20px;
+    }
+
+    .movement-keys {
+        display: flex;
+        gap: 15px;
+    }
+
+    .touch-btn {
+        width: 55px;
+        height: 55px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid #00ff88;
+        color: #00ff88;
+        font-size: 1.3em;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: manipulation;
+        box-shadow: 0 0 8px rgba(0, 255, 136, 0.2);
+        outline: none;
+        transition: all 0.05s ease;
+    }
+
+    .touch-btn:active {
+        background: rgba(0, 255, 136, 0.25);
+        transform: scale(0.9);
+        box-shadow: 0 0 12px rgba(0, 255, 136, 0.5);
+    }
+
+    .fire-btn {
+        width: 60px;
+        height: 60px;
+        border-color: #ff0055;
+        color: #ff0055;
+        font-size: 1.4em;
+        box-shadow: 0 0 8px rgba(255, 0, 85, 0.2);
+    }
+
+    .fire-btn:active {
+        background: rgba(255, 0, 85, 0.25);
+        box-shadow: 0 0 12px rgba(255, 0, 85, 0.5);
+    }
+
     .difficulty-select {
         flex-direction: column;
         gap: 8px;
@@ -415,7 +476,7 @@ h1 {
     }
 
     .controls p {
-        font-size: 0.55em;
+        display: none; /* Hide keybind text on mobile */
     }
 
     .btn {
